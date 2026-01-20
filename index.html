@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <title>Fap Hero: Realism</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://unpkg.com/three@0.126.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div id="stealth-layer"><div class="stealth-clock" id="clock-display">00:00</div><div class="stealth-date">System Standby</div></div>
+    
+    <div id="loader">
+        <div class="loader-content">
+            <div class="title">SYSTEM READY</div>
+            <button id="start-btn" class="btn-glitch">INITIALIZE</button>
+            <div class="subtitle">LOADING ASSETS...</div>
+        </div>
+    </div>
+
+    <div id="vignette"></div>
+
+    <div id="ui-layer">
+        <div class="hud-top">
+            <div class="stat-group"><div class="label">PROTOCOL</div><div id="beat-text">IDLE</div></div>
+            <div class="stat-group" style="align-items: flex-end;">
+                <div class="label">INTENSITY</div>
+                <div id="intensity-container"><div id="intensity-bar"></div></div>
+            </div>
+        </div>
+        <div id="timeline-container"><canvas id="timelineCanvas"></canvas></div>
+        <div id="panic-zone"></div>
+    </div>
+
+    <div id="rhythm-track">
+        <div id="hit-zone"></div>
+        <canvas id="trackCanvas"></canvas>
+    </div>
+
+    <canvas id="mainCanvas"></canvas>
+
+    <script src="config.js"></script>
+    <script src="tools.js"></script>
+    <script src="patterns.js"></script>
+    <script src="audio.js"></script>
+    <script src="scene.js"></script>
+    <script src="main.js"></script>
+
+    <script>
+        setInterval(() => {
+            const el = document.getElementById('clock-display');
+            if(el) { const d = new Date(); el.innerText = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
+        }, 1000);
+    </script>
+</body>
+</html>

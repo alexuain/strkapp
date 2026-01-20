@@ -1,0 +1,272 @@
+/* --- GLOBAL RESET & BASE --- */
+body { 
+    margin: 0; 
+    overflow: hidden; 
+    background-color: #050005; /* Глубокий черный фон */
+    font-family: 'Courier New', monospace; 
+    user-select: none; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+/* 3D Canvas (Сцена) */
+#mainCanvas { 
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    z-index: 1; 
+}
+
+/* Виньетка (Затемнение по краям) */
+#vignette { 
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    pointer-events: none; 
+    z-index: 10; 
+    box-shadow: inset 0 0 150px rgba(0,0,0,0.9); 
+}
+
+/* --- UI LAYER (HUD) --- */
+#ui-layer { 
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    z-index: 20; 
+    pointer-events: none; /* Клики проходят сквозь интерфейс */
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    padding: 20px; 
+    box-sizing: border-box; 
+}
+
+/* Верхняя панель (Текст и Бар) */
+.hud-top { 
+    display: flex; 
+    justify-content: space-between; 
+    width: 100%; 
+    align-items: flex-start; 
+}
+
+.stat-group { 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.label { 
+    font-size: 10px; 
+    color: #666; 
+    letter-spacing: 2px; 
+    margin-bottom: 5px; 
+}
+
+#beat-text { 
+    font-size: 24px; 
+    color: #fff; 
+    text-shadow: 0 0 10px #00f3ff; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    transition: transform 0.05s;
+}
+
+/* Intensity Bar (Полоска справа сверху) */
+#intensity-container { 
+    width: 200px; 
+    height: 6px; 
+    background: rgba(255,255,255,0.1); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    border-radius: 4px; 
+    overflow: hidden; 
+}
+
+#intensity-bar { 
+    width: 0%; 
+    height: 100%; 
+    background: linear-gradient(90deg, #00f3ff, #ff0055); 
+    box-shadow: 0 0 15px #ff0055; 
+    transition: width 0.1s linear; 
+}
+
+/* --- TIMELINE GRAPH (График внизу) --- */
+#timeline-container { 
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    height: 80px; 
+    /* Градиентный фон вместо белой полосы */
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); 
+    border-top: 1px solid rgba(255,255,255,0.1); 
+    z-index: 18; 
+    pointer-events: none;
+}
+
+#timelineCanvas { 
+    width: 100%; 
+    height: 100%; 
+    display: block; 
+}
+
+/* --- RHYTHM TRACK (Дорожка справа) --- */
+#rhythm-track {
+    position: absolute;
+    right: 20px;
+    top: 0;
+    bottom: 100px; /* Оставляем место снизу для графика */
+    width: 70px;
+    z-index: 15;
+    
+    /* Фон-стекло */
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0, 20, 40, 0.8) 100%);
+    
+    /* Неоновые границы */
+    border-left: 1px solid rgba(0, 243, 255, 0.3);
+    border-right: 1px solid rgba(0, 243, 255, 0.3);
+    box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.05);
+    
+    overflow: hidden;
+}
+
+/* Анимация бегущей сетки */
+#rhythm-track::before {
+    content: '';
+    position: absolute;
+    top: -50px; left: 0; right: 0; bottom: 0;
+    background-image: linear-gradient(transparent 95%, rgba(0, 243, 255, 0.15) 100%);
+    background-size: 100% 50px; /* Шаг сетки */
+    animation: scrollGrid 1.0s linear infinite;
+    z-index: 0;
+}
+
+/* Центральная направляющая линия */
+#rhythm-track::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 0;
+}
+
+@keyframes scrollGrid {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(50px); }
+}
+
+#trackCanvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 2; /* Рисуем ноты поверх сетки */
+}
+
+/* --- HIT ZONE (Прицел) --- */
+#hit-zone {
+    position: absolute;
+    bottom: 15%; /* Точка удара */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 54px;
+    height: 54px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Внешнее кольцо */
+#hit-zone::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+    transition: all 0.05s;
+}
+
+/* Вращающийся прицел внутри */
+#hit-zone::after {
+    content: '';
+    position: absolute;
+    top: 10%; left: 10%; width: 80%; height: 80%;
+    border: 2px dashed rgba(0, 243, 255, 0.8);
+    border-radius: 50%;
+    animation: spinSight 8s linear infinite;
+    transition: all 0.05s;
+}
+
+@keyframes spinSight { to { transform: rotate(360deg); } }
+
+/* Эффект удара (активируется классом .hit-active) */
+#hit-zone.hit-active::before {
+    border-color: #fff;
+    box-shadow: 0 0 30px #00f3ff, inset 0 0 20px #00f3ff;
+    background: rgba(0, 243, 255, 0.2);
+    transform: scale(1.1);
+}
+
+#hit-zone.hit-active::after {
+    border-color: #fff;
+    border-style: solid; /* Становится сплошным при ударе */
+}
+
+/* --- PANIC ZONE & SCREENS --- */
+#panic-zone { 
+    position: absolute; 
+    top: 0; right: 0; 
+    width: 100px; height: 100px; 
+    z-index: 100; 
+    pointer-events: auto; 
+}
+
+/* Loader Screen */
+#loader { 
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: #000; 
+    z-index: 100; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: opacity 0.5s; 
+}
+
+.loader-content { text-align: center; color: #00f3ff; }
+.title { font-size: 18px; letter-spacing: 5px; margin-bottom: 30px; opacity: 0.8; }
+.subtitle { font-size: 10px; color: #666; margin-top: 15px; }
+
+/* Start Button */
+.btn-glitch { 
+    background: transparent; 
+    border: 1px solid #00f3ff; 
+    color: #00f3ff; 
+    padding: 15px 40px; 
+    font-size: 16px; 
+    letter-spacing: 3px; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    text-transform: uppercase;
+}
+
+.btn-glitch:hover { 
+    background: #00f3ff; 
+    color: #000; 
+    box-shadow: 0 0 20px #00f3ff; 
+}
+
+/* Stealth Mode (Fake Clock) */
+#stealth-layer { 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: #000; 
+    z-index: 9999; 
+    display: none; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    font-family: sans-serif; 
+}
+.stealth-active { display: flex !important; }
+.stealth-clock { font-size: 80px; font-weight: 200; color: #fff; }
+.stealth-date { font-size: 18px; color: #666; margin-top: 10px; }
